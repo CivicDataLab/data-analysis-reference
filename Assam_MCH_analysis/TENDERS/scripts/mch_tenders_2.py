@@ -127,8 +127,115 @@ for csv in csvs:
     input_df = input_df.drop_duplicates()
     tender_ids = input_df["Tender ID"]
 
+    CORE_MCH_KEYWORDS = [
+        # pregnancy, delivery, mother & child
+        "pregnancy",
+        "child",
+        "mother",
+        "maternal",
+        "maternity",
+        "mother and child",
+        "maternity and child health",
+        "pregnant woman",
+        "pregnant women",
+        "pregnancy care",
+        "institutional delivery",
+        "labour room",
+        "labor room",
+        "labour room furniture",
+        "labour room upgradation",
+        "maternity ward",
+        "newborn",
+        "neonatal",
+        "nicu",
+        "sncu",
+        "special newborn care unit",
+        "newborn care unit",
+        "12 bedded sncu",
+    ]
+
+    ANC_PNC_KEYWORDS = [
+        "antenatal care",
+        "antenatal",
+        "antenatal clinic",
+        "anc check-up",
+        "anc clinic",
+        "postnatal care",
+        "pnc visit",
+        "gestational diabetes",
+        "screening of gestational diabetes",
+        "pregnant women screening",
+    ]
+
+    IMMUNIZATION_CHILD_KEYWORDS = [
+        "immunization",
+        "immunisation",
+        "vaccination",
+        "vaccine",
+        "cold chain",
+        "ice lined refrigerator",
+        "ilr",
+        "deep freezer",
+        "vaccine carrier",
+        "cold box",
+        "child health",
+        "child health care",
+        "child health screening",
+        "rbsk",
+        "rbsk screening",
+        "deic centre",
+        "deic center",
+        "early intervention centre",
+        "early intervention center",
+    ]
+
+    NUTRITION_MCH_KEYWORDS = [
+        "nutrition rehabilitation",
+        "growth monitoring",
+        "malnutrition reduction",
+        "anganwadi centre",
+        "anganwadi center",
+        "icds centre",
+        "icds center",
+        "poshan",
+        "nutrition",
+    ]
+
+    SCHEME_EXPLICIT_KEYWORDS = [
+        "jssk",
+        "samahar kit",
+        "jsy",
+        "janani suraksha yojana",
+        "janani shishu suraksha karyakram",
+        "pmsma",
+        "pmmvy",
+        "suman programme",
+        "mamoni",
+        "mamata kit",
+        "sneha sparsha",
+        "operation smile",
+        "assam free diagnostics",
+        "national maternity benefit scheme",
+        "laqshya",
+        "laqshya guideline",
+        "equipment under maternal health",
+        "maternal health equipment",
+    ]
+
+
     # MCH Keywords (global so mch_filter sees them)
     global POSITIVE_KEYWORDS
+    POSITIVE_KEYWORDS = (
+    CORE_MCH_KEYWORDS
+    + ANC_PNC_KEYWORDS
+    + IMMUNIZATION_CHILD_KEYWORDS
+    + NUTRITION_MCH_KEYWORDS
+    + SCHEME_EXPLICIT_KEYWORDS
+    )
+    
+
+    # older keywords
+    '''
     POSITIVE_KEYWORDS = [
         # Core MCH concepts
         "maternal",
@@ -192,6 +299,24 @@ for csv in csvs:
         "nrhm",
         "mamoni",               # Mamoni scheme (Assam)
 
+        # Laqshya scheme
+        "laqshya",
+        "laqshya guideline",
+        "labour room",
+        "labor room",
+        "labour room furniture",
+        "upgradation of labour room",
+        "labour room upgradation",
+
+        # Neonatal units
+        "sncu",
+        "special newborn care unit",
+        "12 bedded sncu",
+        "newborn care unit",
+        "newborn stabilization unit",
+        "nicu",
+        "neonatal intensive care unit",
+
         # Other scheme names you may start seeing in later data dumps
         "asha worker",
         "asha training",
@@ -215,7 +340,7 @@ for csv in csvs:
         "assam free diagnostics",
         "national maternity benefit scheme",
         "rch",
-    ]
+    ]   '''
 
     global NEGATIVE_KEYWORDS
     NEGATIVE_KEYWORDS = []
@@ -238,21 +363,6 @@ for csv in csvs:
     if idea_frm_tenders_df.shape[0] == 0:
         continue
 
-    # Classify tenders based on Monsoons
-    for index, row in idea_frm_tenders_df.iterrows():
-        monsoon = ""
-        published_date = dateutil.parser.parse(row['Published Date'])
-        if 1 <= published_date.month <= 5:
-            monsoon = "Pre-Monsoon"
-            if published_date.month == 5 and published_date.day > 14:
-                monsoon = "Monsoon"
-        elif 6 <= published_date.month <= 10:
-            monsoon = "Monsoon"
-            if published_date.month == 10 and published_date.day > 14:
-                monsoon = "Post-Monsoon"
-        else:
-            monsoon = "Post-Monsoon"
-        idea_frm_tenders_df.loc[index, "Season"] = monsoon  # type: ignore
 
     # -----------------------------
     # Identify scheme related information (IMPROVED LOGIC)
@@ -273,23 +383,6 @@ for csv in csvs:
             "deep freezer",
             "vaccine carrier",
             "cold box",
-        ],
-        "MISSION_INDRADHANUSH": [
-            "mission indradhanush",
-            "MI",
-            "mi",
-            "immunization campaign outreach",
-            "left-out children vaccination",
-            "dropout children vaccination",
-        ],
-        "IMI": [
-            "intensified mission indradhanush",
-            "IMI",
-            "imi",
-            "imi 2.0",
-            "imi immunization",
-            "imi drive",
-            "high-risk area vaccination",
         ],
 
         # ASHA & community health workers
@@ -486,6 +579,7 @@ for csv in csvs:
             "rch phase ii",
             "rch register",
         ],
+        
         "NHM": [
             "NHM",
             "nhm",
@@ -496,6 +590,17 @@ for csv in csvs:
             "chc upgradation nhm",
             "phc upgradation nhm",
             "district hospital mch strengthening",
+        ],
+        "MSDP":[
+            "MSDP",
+            "msdp",
+            "Multi Sectoral Development Programme",
+        ],
+
+        "SOPD":[
+            "SOPD",
+            "sopd",
+            "State Owned Priority Development"
         ],
 
         # New schemes / departments
@@ -558,3 +663,4 @@ for csv in csvs:
 
 idea_frm_tenders_df = pd.concat(dfs)
 idea_frm_tenders_df.to_csv(data_path + 'mch_tenders_all.csv', index=False)
+print('Total MCH tenders across all months: ', idea_frm_tenders_df.shape[0])
