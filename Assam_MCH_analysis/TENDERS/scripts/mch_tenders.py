@@ -79,6 +79,133 @@ def find_schemes_for_tender(tender_text: str, schemes_identifier: dict) -> str:
     return ";".join(sorted(matched))
 
 # -----------------------------
+# MCH keyword logic
+# -----------------------------
+
+# Strong signals: if any of these hit, we are very likely in MCH land
+CORE_MCH_KEYWORDS = [
+    # Maternal & delivery
+    "maternal",
+    "maternity",
+    "mother and child",
+    "maternity and child health",
+    "pregnant woman",
+    "pregnant women",
+    "pregnancy care",
+    "institutional delivery",
+    "delivery point",
+    "obstetric",
+    "obstetrics",
+    "labour room",
+    "labor room",
+    "labour ward",
+    "maternity ward",
+
+    # Newborn & neonatal care
+    "newborn",
+    "neonatal",
+    "infant",
+    "nicu",
+    "neonatal intensive care unit",
+    "sncu",
+    "special newborn care unit",
+    "newborn care unit",
+    "newborn stabilization unit",
+]
+
+ANC_PNC_KEYWORDS = [
+    "antenatal care",
+    "antenatal clinic",
+    "anc clinic",
+    "anc check-up",
+    "anc check up",
+    "postnatal care",
+    "pnc visit",
+    "pnc clinic",
+    "gestational diabetes",
+    "screening of gestational diabetes",
+    "pregnant women screening",
+]
+
+IMM_CHILD_KEYWORDS = [
+    # Immunization & child health
+    "immunization",
+    "immunisation",
+    "vaccination",
+    "vaccine",
+    "cold chain",
+    "ice lined refrigerator",
+    "ilr",
+    "deep freezer",
+    "vaccine carrier",
+    "cold box",
+    "child health",
+    "child health care",
+    "child health screening",
+    "school health programme",
+    "school health program",
+    "rbsk",
+    "rbsk screening",
+    "deic centre",
+    "deic center",
+    "early intervention centre",
+    "early intervention center",
+]
+
+NUTRITION_ICDS_KEYWORDS = [
+    "nutrition rehabilitation",
+    "growth monitoring",
+    "malnutrition reduction",
+    "anganwadi centre",
+    "anganwadi center",
+    "icds centre",
+    "icds center",
+    "poshan",
+    "poshan abhiyaan",
+]
+
+SCHEME_EXPLICIT_KEYWORDS = [
+    # Maternal / child schemes
+    "jssk",
+    "janani shishu suraksha karyakram",
+    "jsy",
+    "janani suraksha yojana",
+    "pmsma",
+    "pmmvy",
+    "suman programme",
+    "suman maternity",
+    "mamoni",
+    "mamoni scheme",
+    "mamata kit",
+    "mamata",
+    "sneha sparsha",
+    "operation smile",
+    "assam free diagnostics",
+    "national maternity benefit scheme",
+    "nmbs",
+    "laqshya",
+    "laqshya guideline",
+    "equipment under maternal health",
+    "maternal health equipment",
+    "rch programme",
+    "rch program",
+    "reproductive and child health",
+]
+
+# ALL positive keywords actually used for counting
+POSITIVE_KEYWORDS = list(dict.fromkeys(
+    CORE_MCH_KEYWORDS
+    + ANC_PNC_KEYWORDS
+    + IMM_CHILD_KEYWORDS
+    + NUTRITION_ICDS_KEYWORDS
+    + SCHEME_EXPLICIT_KEYWORDS
+))
+
+# Keep this as you had it, or add real negatives later (veterinary, animal, etc.)
+NEGATIVE_KEYWORDS = []
+
+
+# -----------------------------
 # MCH filter
 # -----------------------------
 
@@ -93,23 +220,74 @@ def mch_filter(row):
     tender_slug = f"{row.get('tender_externalreference', '')} {row.get('tender_title', '')} {row.get('Work Description', '')}"
     tender_slug_norm = normalize_text(tender_slug)
 
-    is_mch_tender = False
+    # group-level scores
+    core_hits = 0
+    anc_pnc_hits = 0
+    imm_child_hits = 0
+    nutrition_hits = 0
+    scheme_hits = 0
 
+    # Prebuild sets for quick membership checks
+    core_set = set(CORE_MCH_KEYWORDS)
+    anc_pnc_set = set(ANC_PNC_KEYWORDS)
+    imm_child_set = set(IMM_CHILD_KEYWORDS)
+    nutrition_set = set(NUTRITION_ICDS_KEYWORDS)
+    scheme_set = set(SCHEME_EXPLICIT_KEYWORDS)
+
+    # Positive keywords
     for keyword in POSITIVE_KEYWORDS:
         kw_norm = normalize_text(keyword)
-        count = len(re.findall(r"\b%s\b" % re.escape(kw_norm), tender_slug_norm))
+        if not kw_norm:
+            count = 0
+        else:
+            count = len(re.findall(r"\b%s\b" % re.escape(kw_norm), tender_slug_norm))
         positive_keywords_dict[keyword] = count
-        if count > 0:
-            is_mch_tender = True
 
+        if count > 0:
+            if keyword in core_set:
+                core_hits += count
+            elif keyword in anc_pnc_set:
+                anc_pnc_hits += count
+            elif keyword in imm_child_set:
+                imm_child_hits += count
+            elif keyword in nutrition_set:
+                nutrition_hits += count
+            elif keyword in scheme_set:
+                scheme_hits += count
+
+    # Negative keywords (if you add any later)
     for keyword in NEGATIVE_KEYWORDS:
         kw_norm = normalize_text(keyword)
-        count = len(re.findall(r"\b%s\b" % re.escape(kw_norm), tender_slug_norm))
+        if not kw_norm:
+            count = 0
+        else:
+            count = len(re.findall(r"\b%s\b" % re.escape(kw_norm), tender_slug_norm))
         negative_keywords_dict[keyword] = count
-        if count > 0:
-            is_mch_tender = False
+
+    # Decision logic:
+    # 1. Any core / ANC / child / neonatal keyword → MCH
+    # 2. OR schemes + some supporting context (nutrition / child / ANC or generic health facility)
+    is_mch_tender = False
+
+    strong_signal = (core_hits > 0) or (anc_pnc_hits > 0) or (imm_child_hits > 0)
+    support_signal = (nutrition_hits > 0)
+    health_context = any(
+        h in tender_slug_norm
+        for h in [
+            "phc", "chc", "sub centre", "sub-center", "subcentre",
+            "civil hospital", "district hospital", "sdch", "mdch",
+            "medical college", "health centre", "health center"
+        ]
+    )
+
+    if strong_signal:
+        is_mch_tender = True
+    elif scheme_hits > 0 and (strong_signal or support_signal or health_context):
+        # scheme-only hits allowed only if there is some health-ish context
+        is_mch_tender = True
 
     return str(is_mch_tender), str(positive_keywords_dict), str(negative_keywords_dict)
+
 
 # -----------------------------
 # Main process
@@ -126,7 +304,7 @@ for csv in csvs:
     # De-Duplication (basic)
     input_df = input_df.drop_duplicates()
     tender_ids = input_df["Tender ID"]
-
+    '''
     # MCH Keywords (global so mch_filter sees them)
     global POSITIVE_KEYWORDS
     POSITIVE_KEYWORDS = [
@@ -219,7 +397,7 @@ for csv in csvs:
 
     global NEGATIVE_KEYWORDS
     NEGATIVE_KEYWORDS = []
-
+    '''
     # Apply MCH filter
     mch_filter_tuples = input_df.apply(mch_filter, axis=1)
     input_df.loc[:, 'is_mch_tender'] = [var[0] for var in list(mch_filter_tuples)]
