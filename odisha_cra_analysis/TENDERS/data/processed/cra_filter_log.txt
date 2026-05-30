@@ -1,0 +1,14 @@
+CRA Keyword Filter Run — 2026-05-31T01:09:48.607150
+Input files     : 1
+Total raw rows  : 18295
+CRA matches     : 1435
+
+Matches by category:
+  C2_irrigation_infrastructure        1213
+  C3_drought_resilience               166
+  C1_water_conservation               149
+  C8_scheme_specific                  122
+  C4_flood_cyclone_protection         109
+  C5_climate_smart_farming            28
+  C7_post_harvest_supply_chain        14
+  C6_agroforestry_ecosystem           2
