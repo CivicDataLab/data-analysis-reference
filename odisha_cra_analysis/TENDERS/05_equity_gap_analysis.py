@@ -55,7 +55,7 @@ DISTRICT_POPULATION = {
     "Kalahandi":      {"total_pop": 1573054, "agri_pop": 1000000},
     "Kandhamal":      {"total_pop":  731952, "agri_pop": 500000},
     "Kendrapara":     {"total_pop": 1440891, "agri_pop": 900000},
-    "Keonjhar":       {"total_pop": 1802777, "agri_pop": 1100000},
+    "Kendujhar":      {"total_pop": 1802777, "agri_pop": 1100000},
     "Khordha":        {"total_pop": 2246341, "agri_pop": 600000},
     "Koraput":        {"total_pop": 1376934, "agri_pop": 900000},
     "Malkangiri":     {"total_pop":  612727, "agri_pop": 420000},
@@ -88,9 +88,18 @@ def compute_equity_table(
 ) -> pd.DataFrame:
     amt_col = next(
         (c for c in cra_df.columns
-         if c.lower() in ["estimated_amount", "awarded_amount", "amount"]),
+         if c.lower() in ["estimated_amount", "awarded_amount", "amount", "awarded_value"]),
         None,
     )
+
+    _DROP = {"West Singhbhum", "CONFLICT", "NA", ""}
+    cra_df = cra_df[~cra_df["district_clean"].fillna("").isin(_DROP)].copy()
+
+    if amt_col:
+        cra_df[amt_col] = pd.to_numeric(
+            cra_df[amt_col].astype(str).str.replace(",", "", regex=False),
+            errors="coerce",
+        )
 
     agg = cra_df.groupby("district_clean", dropna=False).agg(
         cra_tender_count=("district_clean", "count"),

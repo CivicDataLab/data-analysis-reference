@@ -275,7 +275,7 @@ INTENT_TAGS = {
 ODISHA_DISTRICTS = {
     # Coastal (higher relevance for C4 cyclone/salinity keywords)
     "coastal": [
-        "balasore", "baleswar", "bhadrak", "kendrapara", "jagatsinghpur",
+        "balasore", "baleswar", "bhadrak", "kendrapara", "kendrapada", "jagatsinghpur",
         "puri", "khordha", "khurda", "ganjam", "gajapati",
     ],
     # Inland — drought-prone (higher relevance for C1/C3)
@@ -288,9 +288,9 @@ ODISHA_DISTRICTS = {
         "angul", "balasore", "baleswar", "bargarh", "bhadrak", "bolangir",
         "balangir", "boudh", "cuttack", "deogarh", "dhenkanal", "gajapati",
         "ganjam", "jagatsinghpur", "jajpur", "jharsuguda", "kalahandi",
-        "kandhamal", "kendrapara", "keonjhar", "khordha", "khurda",
-        "koraput", "malkangiri", "mayurbhanj", "nabarangpur", "nayagarh",
-        "nuapada", "puri", "rayagada", "sambalpur", "sonepur", "subarnapur",
-        "sundargarh",
+        "kandhamal", "kendrapara", "kendrapada", "kendujhar", "keonjhar",
+        "khordha", "khurda", "koraput", "malkangiri", "mayurbhanj",
+        "nabarangpur", "nayagarh", "nuapada", "puri", "rayagada",
+        "sambalpur", "sonepur", "subarnapur", "sundargarh",
     ],
 }

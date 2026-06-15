@@ -1,0 +1,25 @@
+district_clean,combined_risk_score,spend_per_lakh_agri_pop,risk_pct,spend_pct,cra_gap_score,cra_class,cra_class_label,drought_risk_score,cyclone_risk_score,cra_tender_count,equity_gap_flag
+Ganjam,4.0,42859139,100.0,91.7,8.3,2,Well-served,3.0,5.0,190,False
+Bhadrak,3.5,1396433,89.6,8.3,81.3,5,Critical Gap,2.0,5.0,14,True
+Puri,3.5,17792503,89.6,62.5,27.1,4,Priority,2.0,5.0,21,False
+Kendrapara,3.5,442924707,89.6,100.0,-10.4,2,Well-served,2.0,5.0,14,False
+Gajapati,3.5,1441881,89.6,12.5,77.1,5,Critical Gap,3.0,4.0,3,True
+Nuapada,3.0,17558059,75.0,54.2,20.8,4,Priority,5.0,1.0,10,False
+Khordha,3.0,369480927,75.0,95.8,-20.8,2,Well-served,2.0,4.0,61,False
+Kalahandi,3.0,9837733,75.0,41.7,33.3,4,Priority,5.0,1.0,33,True
+Kandhamal,2.5,23372061,47.9,70.8,-22.9,1,Lower Concern,3.0,2.0,25,False
+Nabarangpur,2.5,6115462,47.9,29.2,18.8,3,Moderate Gap,4.0,1.0,33,True
+Koraput,2.5,21280321,47.9,66.7,-18.7,1,Lower Concern,3.0,2.0,87,False
+Rayagada,2.5,8768921,47.9,37.5,10.4,1,Lower Concern,3.0,2.0,8,True
+Sonepur,2.5,34294584,47.9,79.2,-31.2,1,Lower Concern,4.0,1.0,13,False
+Dhenkanal,2.5,5738653,47.9,25.0,22.9,3,Moderate Gap,3.0,2.0,23,True
+Cuttack,2.5,13122436,47.9,50.0,-2.1,1,Lower Concern,2.0,3.0,29,True
+Boudh,2.5,12043597,47.9,45.8,2.1,1,Lower Concern,4.0,1.0,7,True
+Bargarh,2.5,35873414,47.9,83.3,-35.4,1,Lower Concern,4.0,1.0,66,False
+Nayagarh,2.5,1933578,47.9,16.7,31.3,3,Moderate Gap,3.0,2.0,30,True
+Sambalpur,2.0,7174014,16.7,33.3,-16.7,1,Lower Concern,3.0,1.0,20,False
+Jharsuguda,2.0,17571413,16.7,58.3,-41.7,1,Lower Concern,3.0,1.0,18,False
+Deogarh,2.0,3250742,16.7,20.8,-4.2,1,Lower Concern,3.0,1.0,6,False
+Sundargarh,2.0,26281422,16.7,75.0,-58.3,1,Lower Concern,3.0,1.0,40,False
+Malkangiri,2.0,261647,16.7,4.2,12.5,1,Lower Concern,3.0,1.0,2,False
+Mayurbhanj,1.5,39399985,4.2,87.5,-83.3,1,Lower Concern,2.0,1.0,176,False
